@@ -5,12 +5,12 @@
 int main(int argc, char **argv)
 {
     if (argc != 2) {
-	fprintf(stderr, "usage: %s <filename>\n",argv[0]);
-	exit(1);
+	    fprintf(stderr, "usage: %s <filename>\n",argv[0]);
+	    exit(1);
     }
     
     Node *root = encode(argv[1]);
-    traverse_tree(0,root);
+    traverse_tree(0,root, "\0");
     
     return EXIT_SUCCESS;
 }

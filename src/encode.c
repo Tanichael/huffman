@@ -18,7 +18,7 @@ static void count_symbols(const char *filename);
 static void reset_count(void);
 
 // 与えられた引数でNode構造体を作成し、そのアドレスを返す関数
-static Node *create_node(int symbol, int count, Node *left, Node *right);
+static Node *create_node(int symbol, int count, Node *left, Node *right, char* temp);
 
 // Node構造体へのポインタが並んだ配列から、最小カウントを持つ構造体をポップしてくる関数
 // n は 配列の実効的な長さを格納する変数を指している（popするたびに更新される）
@@ -58,10 +58,10 @@ static void reset_count(void)
 
 }
 
-static Node *create_node(int symbol, int count, Node *left, Node *right)
+static Node *create_node(int symbol, int count, Node *left, Node *right, char *temp)
 {
     Node *ret = (Node *)malloc(sizeof(Node));
-    *ret = (Node){ .symbol = symbol, .count = count, .left = left, .right = right};
+    *ret = (Node){ .symbol = symbol, .count = count, .left = left, .right = right, .code = temp};
     return ret;
 }
 
@@ -97,8 +97,8 @@ static Node *build_tree(void)
     for (int i = 0; i < NSYMBOLS; i++) {
         // カウントの存在しなかったシンボルには何もしない
         if (symbol_count[i] == 0) continue;
-        
-        nodep[n++] = create_node(i, symbol_count[i], NULL, NULL);
+        char *temp = "\0";
+        nodep[n++] = create_node(i, symbol_count[i], NULL, NULL, temp);
     }
 
     const int dummy = -1; // ダミー用のsymbol を用意しておく
@@ -109,7 +109,8 @@ static Node *build_tree(void)
         // Create a new node
         // 選ばれた2つのノードを元に統合ノードを新規作成
         // 作成したノードはnodep にどうすればよいか?
-        nodep[n++] = create_node(dummy, node1->count + node2->count, node1, node2);
+        char *temp = "\0";
+        nodep[n++] = create_node(dummy, node1->count + node2->count, node1, node2, temp);
 	
     }
 
@@ -122,11 +123,12 @@ static Node *build_tree(void)
 // Perform depth-first traversal of the tree
 // 深さ優先で木を走査する
 // 現状は何もしていない（再帰してたどっているだけ）
-void traverse_tree(const int depth, const Node *np)
-{			  
+void traverse_tree(const int depth, Node *np, char* temp)
+{	
     if (np == NULL) return;
     if(depth == 0) {
         printf(".\n");
+        np->code[0] = '\0';
     } else {
         for(int i = 0; i < depth - 1; i++) {
             int key = 1;
@@ -139,9 +141,17 @@ void traverse_tree(const int depth, const Node *np)
                 printf("    ");
             }
         }
+        for(int i = 0; i < 256; i++) {
+            if(temp[i] == '\0') {
+                np->code[i] = (flag[depth]%2 == 0)? '1':'0';
+                np->code[i+1] = '\0';
+                break;
+            } else {
+                np->code[i] = temp[i];
+            }
+        }
         if((flag[depth] % 2) == 0) {
             printf("├── ");
-            
         } else {
             printf("└── ");
         }
@@ -149,14 +159,14 @@ void traverse_tree(const int depth, const Node *np)
         if(np->symbol == -1) {
             printf("-1\n");
         } else if((char)(np->symbol) == '\n') {
-            printf("LF\n");
+            printf("LF: %s\n", np->code);
         } else {
-            printf("%c\n", (char)(np->symbol));
+            printf("%c: %s\n", (char)(np->symbol), np->code);
         }
     }
     flag[depth]++;
-    traverse_tree(depth + 1, np->left);
-    traverse_tree(depth + 1, np->right);
+    traverse_tree(depth + 1, np->left, np->code);
+    traverse_tree(depth + 1, np->right, np->code);
 }
 
 // この関数は外部 (main) で使用される (staticがついていない)

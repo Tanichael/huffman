@@ -7,10 +7,11 @@ struct node{
     int count;
     Node *left;
     Node *right;
+    char code[256];
 };
 
 // ファイルをエンコードし木のrootへのポインタを返す
 Node *encode(const char *filename);
 // Treeを走査して表示する
-void traverse_tree(const int depth, const Node *root);
+void traverse_tree(const int depth, Node *root, char* temp);
 
