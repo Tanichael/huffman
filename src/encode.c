@@ -130,10 +130,10 @@ void traverse_tree(const int depth, const Node *np)
     } else {
         for(int i = 0; i < depth - 1; i++) {
             int key = 1;
-            for(int j = 0; j < i+1; j++) {
+            for(int j = 0; j < i + 1; j++) {
                 key *= 2;
             }
-            if(flag[i+1] < key) {
+            if(flag[i+1] < key && flag[i+1] % 2 != 0) {
                 printf("│   ");
             } else {
                 printf("    ");
